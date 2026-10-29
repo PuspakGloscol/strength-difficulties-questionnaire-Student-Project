@@ -28,13 +28,13 @@ services:
     networks:
       - sdq-test
     environment:
-      LIQUIBASE_DRIVER: org.postgresql.Driver
-      LIQUIBASE_COMMAND_URL: jdbc:postgresql://sdq-test-db:5432/${SDQ_TEST_DATABASE_NAME}
-      LIQUIBASE_COMMAND_USERNAME: ${SDQ_TEST_DATABASE_USERNAME}
-      LIQUIBASE_COMMAND_PASSWORD: ${SDQ_TEST_DATABASE_PASSWORD}
+      FLYWAY_URL: jdbc:postgresql://sdq-test-db:5432/${SDQ_TEST_DATABASE_NAME}
+      FLYWAY_USER: ${SDQ_TEST_DATABASE_USERNAME}
+      FLYWAY_PASSWORD: ${SDQ_TEST_DATABASE_PASSWORD}
     depends_on:
       sdq-test-db:
         condition: service_healthy
+    command: migrate
 
 networks:
   sdq-test:

@@ -151,6 +151,10 @@ public class GoalRepositoryImpl implements GoalRepository {
     if (!goalTypes.isEmpty()) {
       conditions.add("s.goal_type IN (:goal_types)");
     }
+    if (!assessors.isEmpty()) {
+      conditions.add("s.assessor IN (:assessors)");
+    }
+    conditions.add("(s.last_score - s.first_score) >= :minProgress");
     String sql =
         String.format(
             """
@@ -162,8 +166,7 @@ public class GoalRepositoryImpl implements GoalRepository {
     SELECT *
     FROM scored s
     JOIN client c ON c.client_id = s.client_id
-    %s
-    AND (s.last_score - s.first_score) >= :minProgress;
+    %s;
             """,
             whereClause(conditions));
     Map<String, Object> params = new HashMap<>();

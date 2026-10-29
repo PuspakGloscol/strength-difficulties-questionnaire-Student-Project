@@ -89,7 +89,7 @@ public class SdqRepositoryImpl implements SdqRepository {
       List<Assessor> assessors, List<DemographicFilter> filters, LocalDate from, LocalDate to) {
     List<String> conditions = new ArrayList<>();
     conditions.add("assessor IN (:assessors)");
-    if (!filters.isEmpty()) {
+    if (ClientRepositoryImpl.hasSupportedDemographicFilters(filters)) {
       conditions.add("last_period_date >= :period_from");
       conditions.add("last_period_date < :period_to");
       ClientRepositoryImpl.filterSelectWhere(filters).forEach(conditions::add);

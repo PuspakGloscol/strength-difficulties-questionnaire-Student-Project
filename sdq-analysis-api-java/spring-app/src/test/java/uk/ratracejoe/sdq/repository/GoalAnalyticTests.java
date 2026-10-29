@@ -74,6 +74,7 @@ class GoalAnalyticTests {
                     .build())
             .getBody();
     assertThat(result).hasSize(3);
+    assertThat(result).extracting(GoalProgress::assessor).containsOnly(Assessor.Parent1);
     assertThat(result)
         .extracting(
             g -> g.goal().type(),
@@ -105,5 +106,27 @@ class GoalAnalyticTests {
         .extracting(GoalProgress::goal)
         .extracting(Goal::type)
         .containsOnly(GoalType.BEHAVIOURAL, GoalType.EMOTIONAL);
+  }
+
+  @Test
+  void ignoresUnsupportedMultiValueDemographicFilters() {
+    fixtures.givenAllTestFilesIngested();
+
+    List<GoalProgress> result =
+        client
+            .getGoalsWithProgress(
+                GoalQueryDTO.builder()
+                    .assessors(List.of(Assessor.Parent1))
+                    .filters(
+                        List.of(
+                            new DemographicFilter(
+                                DemographicField.DisabilityType, List.of("LEARNING"))))
+                    .minProgress(1)
+                    .from(LocalDate.of(2024, 5, 1))
+                    .to(LocalDate.of(2025, 11, 1))
+                    .build())
+            .getBody();
+
+    assertThat(result).isNotEmpty();
   }
 }

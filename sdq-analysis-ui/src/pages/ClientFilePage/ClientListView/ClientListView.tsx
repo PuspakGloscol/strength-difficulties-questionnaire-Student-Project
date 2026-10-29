@@ -10,8 +10,7 @@ import {
 } from "@/api/ClientApi/clientApi";
 
 function ClientListView() {
-  const { data: clients, mutate: searchClients } = useSearchClients();
-
+  const { data: clients, searchClients } = useSearchClients();
   const [clientQuery, setClientQuery] =
     React.useState<ClientQueryDTO>(DEFAULT_CLIENT_QUERY);
 

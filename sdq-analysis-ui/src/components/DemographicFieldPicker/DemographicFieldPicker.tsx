@@ -1,25 +1,18 @@
 import React from "react";
-import type { DemographicField } from "@/api/types";
+import { DEMOGRAPHIC_FIELDS, type DemographicField } from "@/api/types";
+import useReference from "@/api/ReferenceApi";
 
 interface Props {
   value: DemographicField;
   onChange: (v: DemographicField) => void;
 }
 
-const OPTIONS: DemographicField[] = [
-  "Gender",
-  "Council",
-  "Ethnicity",
-  "EAL",
-  "DisabilityStatus",
-  "DisabilityType",
-  "CareExperience",
-  "InterventionType",
-  "ACES",
-  "FundingSource",
-];
-
 const DemographicFieldPicker: React.FC<Props> = ({ value, onChange }) => {
+  const {
+    data: { demographicFields },
+  } = useReference();
+  const options = DEMOGRAPHIC_FIELDS.filter((field) => field in demographicFields);
+
   const onInternalChange: React.ChangeEventHandler<HTMLSelectElement> = ({
     target: { value },
   }) => {
@@ -28,7 +21,7 @@ const DemographicFieldPicker: React.FC<Props> = ({ value, onChange }) => {
 
   return (
     <select value={value} onChange={onInternalChange}>
-      {OPTIONS.map((option) => (
+      {options.map((option) => (
         <option key={option} value={option}>
           {option}
         </option>

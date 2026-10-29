@@ -208,19 +208,238 @@ impl ClientService for ClientServiceSqlxImpl {
             .map(|raw_vec| raw_vec.into_iter().map(SdqClient::from).collect())
     }
 
-    async fn get_client_by_id(&self, _client_id: &Uuid) -> Result<SdqClient, SdqError> {
-        Err(SdqError::NotImplemented)
+    async fn get_client_by_id(&self, client_id: &Uuid) -> Result<SdqClient, SdqError> {
+        let raw =
+            sqlx::query_as::<_, SdqClientSqlRow>("SELECT * FROM client_full WHERE client_id = $1")
+                .bind(client_id)
+                .fetch_optional(&self.pool)
+                .await
+                .map_err(|e| SdqError::Db(e.to_string()))?
+                .ok_or_else(|| SdqError::InvalidInput(format!("Unknown client: {client_id}")))?;
+
+        Ok(SdqClient::from(raw))
     }
-    async fn create_client(&self, _client: SdqClient) -> Result<SdqClient, SdqError> {
-        Err(SdqError::NotImplemented)
+    async fn create_client(&self, client: SdqClient) -> Result<SdqClient, SdqError> {
+        let code_name = client
+            .code_name
+            .as_deref()
+            .ok_or_else(|| SdqError::InvalidInput("Client is missing codeName".into()))?;
+        let gender = serde_json::to_value(&client.gender)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let council = serde_json::to_value(&client.council)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let ethnicity = serde_json::to_value(&client.ethnicity)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let eal = serde_json::to_value(&client.eal)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let disability_status = serde_json::to_value(&client.disability_status)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let care_experience = serde_json::to_value(&client.care_experience)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let funding_source = serde_json::to_value(&client.funding_source)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+
+        let mut transaction = self
+            .pool
+            .begin()
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+        sqlx::query(
+            r#"
+            INSERT INTO client
+                (client_id, code_name, date_of_birth, gender, council, ethnicity, eal,
+                 disability_status, care_experience, funding_source)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            "#,
+        )
+        .bind(client.client_id)
+        .bind(code_name)
+        .bind(client.date_of_birth)
+        .bind(gender.as_str())
+        .bind(council.as_str())
+        .bind(ethnicity.as_str())
+        .bind(eal.as_str())
+        .bind(disability_status.as_str())
+        .bind(care_experience.as_str())
+        .bind(funding_source.as_str())
+        .execute(&mut *transaction)
+        .await
+        .map_err(|e| SdqError::Db(e.to_string()))?;
+
+        for disability_type in client.disability_types {
+            let value = serde_json::to_value(disability_type)
+                .map_err(|e| SdqError::InternalError(e.to_string()))?;
+            let value = value
+                .as_str()
+                .ok_or_else(|| SdqError::InternalError("Invalid disability type".into()))?;
+            sqlx::query("INSERT INTO disability_type (client_id, disability_type) VALUES ($1, $2)")
+                .bind(client.client_id)
+                .bind(value)
+                .execute(&mut *transaction)
+                .await
+                .map_err(|e| SdqError::Db(e.to_string()))?;
+        }
+        for intervention in client.interventions {
+            sqlx::query(
+                "INSERT INTO intervention_type (client_id, intervention_type, sessions) VALUES ($1, $2, $3)",
+            )
+            .bind(client.client_id)
+            .bind(intervention.r#type)
+            .bind(intervention.sessions)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+        }
+        for (ace_type, score) in client.aces {
+            let value = serde_json::to_value(ace_type)
+                .map_err(|e| SdqError::InternalError(e.to_string()))?;
+            let value = value
+                .as_str()
+                .ok_or_else(|| SdqError::InternalError("Invalid ACE type".into()))?;
+            sqlx::query("INSERT INTO aces (client_id, ace_type, score) VALUES ($1, $2, $3)")
+                .bind(client.client_id)
+                .bind(value)
+                .bind(score)
+                .execute(&mut *transaction)
+                .await
+                .map_err(|e| SdqError::Db(e.to_string()))?;
+        }
+        transaction
+            .commit()
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+
+        self.get_client_by_id(&client.client_id).await
     }
-    async fn update_client(&self, _client: SdqClient) -> Result<SdqClient, SdqError> {
-        Err(SdqError::NotImplemented)
+    async fn update_client(&self, client: SdqClient) -> Result<SdqClient, SdqError> {
+        let gender = serde_json::to_value(&client.gender)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let council = serde_json::to_value(&client.council)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let ethnicity = serde_json::to_value(&client.ethnicity)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let eal = serde_json::to_value(&client.eal)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let disability_status = serde_json::to_value(&client.disability_status)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let care_experience = serde_json::to_value(&client.care_experience)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+        let funding_source = serde_json::to_value(&client.funding_source)
+            .map_err(|e| SdqError::InternalError(e.to_string()))?;
+
+        let mut transaction = self
+            .pool
+            .begin()
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+        let updated = sqlx::query(
+            r#"
+            UPDATE client
+            SET code_name = COALESCE($2, code_name),
+                date_of_birth = COALESCE($3, date_of_birth),
+                gender = COALESCE($4, gender),
+                council = COALESCE($5, council),
+                ethnicity = COALESCE($6, ethnicity),
+                eal = COALESCE($7, eal),
+                disability_status = COALESCE($8, disability_status),
+                care_experience = COALESCE($9, care_experience),
+                funding_source = COALESCE($10, funding_source)
+            WHERE client_id = $1
+            "#,
+        )
+        .bind(client.client_id)
+        .bind(&client.code_name)
+        .bind(client.date_of_birth)
+        .bind(gender.as_str())
+        .bind(council.as_str())
+        .bind(ethnicity.as_str())
+        .bind(eal.as_str())
+        .bind(disability_status.as_str())
+        .bind(care_experience.as_str())
+        .bind(funding_source.as_str())
+        .execute(&mut *transaction)
+        .await
+        .map_err(|e| SdqError::Db(e.to_string()))?;
+        if updated.rows_affected() == 0 {
+            return Err(SdqError::InvalidInput(format!(
+                "Unknown client: {}",
+                client.client_id
+            )));
+        }
+
+        sqlx::query("DELETE FROM disability_type WHERE client_id = $1")
+            .bind(client.client_id)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+        for disability_type in client.disability_types {
+            let value = serde_json::to_value(disability_type)
+                .map_err(|e| SdqError::InternalError(e.to_string()))?;
+            let value = value
+                .as_str()
+                .ok_or_else(|| SdqError::InternalError("Invalid disability type".into()))?;
+            sqlx::query("INSERT INTO disability_type (client_id, disability_type) VALUES ($1, $2)")
+                .bind(client.client_id)
+                .bind(value)
+                .execute(&mut *transaction)
+                .await
+                .map_err(|e| SdqError::Db(e.to_string()))?;
+        }
+        sqlx::query("DELETE FROM intervention_type WHERE client_id = $1")
+            .bind(client.client_id)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+        for intervention in client.interventions {
+            sqlx::query(
+                "INSERT INTO intervention_type (client_id, intervention_type, sessions) VALUES ($1, $2, $3)",
+            )
+            .bind(client.client_id)
+            .bind(intervention.r#type)
+            .bind(intervention.sessions)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+        }
+        sqlx::query("DELETE FROM aces WHERE client_id = $1")
+            .bind(client.client_id)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+        for (ace_type, score) in client.aces {
+            let value = serde_json::to_value(ace_type)
+                .map_err(|e| SdqError::InternalError(e.to_string()))?;
+            let value = value
+                .as_str()
+                .ok_or_else(|| SdqError::InternalError("Invalid ACE type".into()))?;
+            sqlx::query("INSERT INTO aces (client_id, ace_type, score) VALUES ($1, $2, $3)")
+                .bind(client.client_id)
+                .bind(value)
+                .bind(score)
+                .execute(&mut *transaction)
+                .await
+                .map_err(|e| SdqError::Db(e.to_string()))?;
+        }
+        transaction
+            .commit()
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))?;
+
+        self.get_client_by_id(&client.client_id).await
     }
-    async fn delete_client(&self, _client_id: &Uuid) -> Result<(), SdqError> {
-        Err(SdqError::NotImplemented)
+    async fn delete_client(&self, client_id: &Uuid) -> Result<(), SdqError> {
+        sqlx::query("DELETE FROM client WHERE client_id = $1")
+            .bind(client_id)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))
+            .map(|_| ())
     }
     async fn delete_all_clients(&self) -> Result<(), SdqError> {
-        Err(SdqError::NotImplemented)
+        sqlx::query("DELETE FROM client")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))
+            .map(|_| ())
     }
 }

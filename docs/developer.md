@@ -62,10 +62,10 @@ Currently the application is split into two functional verticals
 
 Both aspects sit on top of the same database. The creation of that database is a distinct module.
 
-### sdq-database-liquibase
+### sdq-database-flyway
 
-A container that uses liquibase to build the database.
-I have already decided liquibase is too greedy (1GB image!) so will migrate to Flyway.
+A container that uses Flyway to build the database from versioned SQL migrations.
+The `DB_MODULE` variable in `.env` selects the migration project used by both Docker Compose files.
 
 ### sdq-analysis-api-java
 

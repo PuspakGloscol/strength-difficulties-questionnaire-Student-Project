@@ -12,8 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
 import uk.ratracejoe.sdq.SdqApiClient;
 import uk.ratracejoe.sdq.SdqFixtures;
+import uk.ratracejoe.sdq.dto.ClientQueryDTO;
 import uk.ratracejoe.sdq.model.ParsedFile;
 import uk.ratracejoe.sdq.model.SdqClient;
 import uk.ratracejoe.sdq.model.demographics.*;
@@ -92,5 +95,36 @@ class ManageClientTest {
         .extracting(SdqClient::interventions, list(Intervention.class))
         .extracting(Intervention::type)
         .containsExactlyInAnyOrder(InterventionType.IA, InterventionType.PTP);
+  }
+
+  @Test
+  void ignoresUnsupportedMultiValueDemographicFilters() {
+    fixtures.givenAllTestFilesIngested();
+
+    List<SdqClient> results =
+        client.searchClients(
+            ClientQueryDTO.builder()
+                .filters(
+                    List.of(
+                        new DemographicFilter(DemographicField.DisabilityType, List.of("LEARNING")),
+                        new DemographicFilter(DemographicField.ACES, List.of("GENERIC")),
+                        new DemographicFilter(DemographicField.InterventionType, List.of("IA"))))
+                .build());
+
+    assertThat(results).hasSize(8);
+  }
+
+  @Test
+  void rejectsUnsupportedMultiValueDemographicReports() {
+    RestClient restClient = RestClient.builder().baseUrl("http://localhost:" + port).build();
+
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () ->
+                restClient
+                    .get()
+                    .uri("/api/client/demographic_report/DisabilityType")
+                    .retrieve()
+                    .toBodilessEntity())
+        .isInstanceOf(HttpClientErrorException.BadRequest.class);
   }
 }

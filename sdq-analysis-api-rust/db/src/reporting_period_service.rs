@@ -68,6 +68,10 @@ impl ReportingPeriodService for ReportingPeriodServiceSqlxImpl {
     }
 
     async fn delete_all(&self) -> Result<(), SdqError> {
-        Err(SdqError::NotImplemented)
+        sqlx::query("DELETE FROM reporting_period")
+            .execute(&self.pool)
+            .await
+            .map_err(|e| SdqError::Db(e.to_string()))
+            .map(|_| ())
     }
 }

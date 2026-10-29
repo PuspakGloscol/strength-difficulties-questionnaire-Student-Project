@@ -1,6 +1,8 @@
 go 1.26.3
 
 use (
+	./adapters/db
 	./adapters/rest_api
 	./app
+	./domain
 )

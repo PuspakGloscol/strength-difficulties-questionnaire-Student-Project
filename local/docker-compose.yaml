@@ -11,9 +11,14 @@ services:
       - sdq
     profiles:
       - api-go
+    environment:
+      DATABASE_URL: postgres://${SDQ_DATABASE_USERNAME}:${SDQ_DATABASE_PASSWORD}@${APPLICATION_NAME}-db:5432/${SDQ_DATABASE_NAME}?sslmode=disable
     ports:
       # Required when running the UI in dev mode on top of the service in docker
       - "8082:3000"
+    depends_on:
+      sdq-db-migration:
+        condition: service_completed_successfully
 
   sdq-analysis-api-rust:
     build:
@@ -66,13 +71,13 @@ services:
     networks:
       - sdq
     environment:
-      LIQUIBASE_DRIVER: org.postgresql.Driver
-      LIQUIBASE_COMMAND_URL: jdbc:postgresql://sdq-db:5432/${SDQ_DATABASE_NAME}
-      LIQUIBASE_COMMAND_USERNAME: ${SDQ_DATABASE_USERNAME}
-      LIQUIBASE_COMMAND_PASSWORD: ${SDQ_DATABASE_PASSWORD}
+      FLYWAY_URL: jdbc:postgresql://sdq-db:5432/${SDQ_DATABASE_NAME}
+      FLYWAY_USER: ${SDQ_DATABASE_USERNAME}
+      FLYWAY_PASSWORD: ${SDQ_DATABASE_PASSWORD}
     depends_on:
       sdq-db:
         condition: service_healthy
+    command: migrate
 
   sdq-db:
     image: postgres:17

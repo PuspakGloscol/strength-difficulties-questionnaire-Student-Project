@@ -279,11 +279,11 @@ public class ClientRepositoryImpl implements ClientRepository {
       case Ethnicity -> "ethnicity";
       case EAL -> "eal";
       case DisabilityStatus -> "disability_status";
-      case DisabilityType -> "disability_type";
       case CareExperience -> "care_experience";
-      case ACES -> "aces";
       case FundingSource -> "funding_source";
-      default -> "foo";
+      case DisabilityType, InterventionType, ACES ->
+          throw new IllegalArgumentException(
+              "Demographic field is not currently supported in database queries: " + field);
     };
   }
 
@@ -356,14 +356,21 @@ public class ClientRepositoryImpl implements ClientRepository {
 
   public static void addFilters(Map<String, Object> params, List<DemographicFilter> filters) {
     for (DemographicFilter fv : filters) {
-      params.put(demographicColumn(fv.field()), fv.values());
+      if (isClientColumnField(fv.field())) {
+        params.put(demographicColumn(fv.field()), fv.values());
+      }
     }
+  }
+
+  public static boolean hasSupportedDemographicFilters(List<DemographicFilter> filters) {
+    return filters.stream().anyMatch(filter -> isClientColumnField(filter.field()));
   }
 
   public static Stream<String> filterSelectWhere(
       String tableAlias, List<DemographicFilter> fields) {
     return fields.stream()
         .map(DemographicFilter::field)
+        .filter(ClientRepositoryImpl::isClientColumnField)
         .map(ClientRepositoryImpl::demographicColumn)
         .map(column -> String.format("%s.%s IN (:%s)", tableAlias, column, column));
   }
@@ -371,7 +378,15 @@ public class ClientRepositoryImpl implements ClientRepository {
   public static Stream<String> filterSelectWhere(List<DemographicFilter> fields) {
     return fields.stream()
         .map(DemographicFilter::field)
+        .filter(ClientRepositoryImpl::isClientColumnField)
         .map(ClientRepositoryImpl::demographicColumn)
         .map(column -> String.format("%s IN (:%s)", column, column));
+  }
+
+  private static boolean isClientColumnField(DemographicField field) {
+    return switch (field) {
+      case Gender, Council, Ethnicity, EAL, DisabilityStatus, CareExperience, FundingSource -> true;
+      case DisabilityType, InterventionType, ACES -> false;
+    };
   }
 }

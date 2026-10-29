@@ -1,18 +1,14 @@
 import React from "react";
-import {
-  DEMOGRAPHIC_FIELDS,
-  type DemographicField,
-} from "@/api/ReferenceApi/referenceApi";
+import { DEMOGRAPHIC_FIELDS, type DemographicField } from "@/api/types";
 import useDemographicReport from "@/api/ClientApi/useDemographicReport";
 import useReference from "@/api/ReferenceApi";
 
-const OPTIONS = DEMOGRAPHIC_FIELDS.map((field) => ({
-  value: field,
-  label: field,
-}));
-
 function DemographicReportPage() {
-  const { getLabelForDemographicValue } = useReference();
+  const {
+    data: { demographicFields },
+    getLabelForDemographicValue,
+  } = useReference();
+  const options = DEMOGRAPHIC_FIELDS.filter((field) => field in demographicFields);
   const [demographicName, setDemographicName] =
     React.useState<DemographicField>("Gender");
   const { demographicReport } = useDemographicReport(demographicName);
@@ -33,9 +29,9 @@ function DemographicReportPage() {
       <div className="form-group">
         <label>Demographic</label>
         <select value={demographicName} onChange={onDemographicNameChange}>
-          {OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
+          {options.map((field) => (
+            <option key={field} value={field}>
+              {field}
             </option>
           ))}
         </select>
