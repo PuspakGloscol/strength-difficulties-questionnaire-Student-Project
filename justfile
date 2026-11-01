@@ -127,14 +127,14 @@ docker-stop-test:
 docker-stop-all: docker-stop docker-stop-test
 
 docker-build-rust-api:
-    docker build -t {{ANALYSIS_API_MODULE_RUST}} -f Dockerfile.rust .
+    docker build --target rust -t {{ANALYSIS_API_MODULE_RUST}} -f Dockerfile.analysis .
 
 docker-build-go-api:
-    docker build -t {{SUBMISSION_API_MODULE_GO}} -f Dockerfile.golang .
+    docker build -t {{SUBMISSION_API_MODULE_GO}} -f Dockerfile.submission .
 
 # Build the Docker image for the application
 docker-build-java-api:
-    docker build -t {{ANALYSIS_API_MODULE_JAVA}} -f Dockerfile.java .
+    docker build --target java -t {{ANALYSIS_API_MODULE_JAVA}} -f Dockerfile.analysis .
 
 # Build the Docker image for the database migration
 docker-build-db-migration:

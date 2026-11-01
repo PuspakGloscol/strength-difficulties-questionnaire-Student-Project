@@ -8,6 +8,7 @@
 # Local build artefacts
 **/.gradle
 **/build
+**/target
 **/dist
 **/node_modules
 **/.DS_Store

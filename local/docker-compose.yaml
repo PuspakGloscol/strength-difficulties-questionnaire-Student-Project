@@ -4,7 +4,7 @@ services:
   sdq-submission-api-go:
     build: 
       context: ..
-      dockerfile: Dockerfile.golang
+      dockerfile: Dockerfile.submission
     image: ${SUBMISSION_API_MODULE_GO}
     container_name: ${SUBMISSION_API_MODULE_GO}
     networks:
@@ -23,7 +23,8 @@ services:
   sdq-analysis-api-rust:
     build:
       context: ..
-      dockerfile: Dockerfile.rust
+      dockerfile: Dockerfile.analysis
+      target: rust
     image: ${ANALYSIS_API_MODULE_RUST}
     container_name: ${ANALYSIS_API_MODULE_RUST}
     networks:
@@ -45,7 +46,8 @@ services:
   sdq-analysis-api-java:
     build:
       context: ..
-      dockerfile: Dockerfile.java
+      dockerfile: Dockerfile.analysis
+      target: java
     image: ${ANALYSIS_API_MODULE_JAVA}
     container_name: ${ANALYSIS_API_MODULE_JAVA}
     networks:
