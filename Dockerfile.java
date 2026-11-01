@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1-labs
+
 # Stage 1: Build UI
 FROM node:24-alpine AS ui-builder
 ARG ANALYSIS_UI_MODULE=sdq-analysis-ui
@@ -20,17 +22,8 @@ WORKDIR /app
 # Copy only the Gradle wrapper and project metadata first
 COPY ${ANALYSIS_API_MODULE_JAVA}/gradlew ${ANALYSIS_API_MODULE_JAVA}/gradlew.bat ./
 COPY ${ANALYSIS_API_MODULE_JAVA}/gradle ./gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/settings.gradle ${ANALYSIS_API_MODULE_JAVA}/build.gradle ./
-COPY ${ANALYSIS_API_MODULE_JAVA}/adapters/incoming/service/service-rest-adapter/build.gradle ./adapters/incoming/service/service-rest-adapter/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/adapters/outgoing/parse-file/xslx-parse-file/build.gradle ./adapters/outgoing/parse-file/xslx-parse-file/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/adapters/outgoing/repository/repository-sql-adapter/build.gradle ./adapters/outgoing/repository/repository-sql-adapter/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/domain/model/build.gradle ./domain/model/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/domain/ports/incoming/service/build.gradle ./domain/ports/incoming/service/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/domain/ports/outgoing/parse-file/build.gradle ./domain/ports/outgoing/parse-file/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/domain/ports/outgoing/repository/build.gradle ./domain/ports/outgoing/repository/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/domain/use-cases/build.gradle ./domain/use-cases/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/domain/utils/build.gradle ./domain/utils/build.gradle
-COPY ${ANALYSIS_API_MODULE_JAVA}/spring-app/build.gradle ./spring-app/build.gradle
+COPY ${ANALYSIS_API_MODULE_JAVA}/settings.gradle ./
+COPY --parents ${ANALYSIS_API_MODULE_JAVA}/./**/build.gradle ./
 
 # Resolve dependencies using a dedicated Gradle cache mount so repeated builds reuse downloads
 RUN --mount=type=cache,target=/root/.gradle/caches,sharing=locked \
