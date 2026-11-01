@@ -4,7 +4,7 @@ plugins {
 }
 
 ext {
-	springBootVersion = '3.5.14'
+	springBootVersion = '4.1.2'
 	springDependencyVersion = '1.1.7'
 }
 
