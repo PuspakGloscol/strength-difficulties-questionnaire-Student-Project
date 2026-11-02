@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import useClient from "@/api/ClientApi/useClient";
 import InProgressSpinner from "@/components/InProgressSpinner";
 import ClientCard from "@/pages/ClientFilePage/ClientListView/ClientCard";

@@ -19,11 +19,12 @@ function progressString(firstScore: number, lastScore: number): string {
 }
 
 const GoalProgressTable: React.FC<Props> = ({ goals }) => {
+  const { getLabelForGoalType } = useReference();
+
   if (!goals) {
     return <div>No goal progress found.</div>;
   }
 
-  const { getLabelForGoalType } = useReference();
   return (
     <table>
       <thead>

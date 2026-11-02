@@ -6,7 +6,8 @@ import "./AppNotifications.scss";
 
 function AppNotifications() {
   const { messages, dismissMessage } = useAppNotificationContext();
-  const [show, setShow] = React.useState<boolean>(false);
+  const [open, setOpen] = React.useState<boolean>(false);
+  const show = open && messages.length > 0;
 
   const boxStyle = (() => {
     let style = "notification-list p-3";
@@ -16,15 +17,9 @@ function AppNotifications() {
     return style;
   })();
 
-  React.useEffect(() => {
-    if (messages.length === 0) {
-      setShow(false);
-    }
-  }, [messages]);
-
   return (
     <div className="notification-bell">
-      <button id="bellBtn" onClick={() => setShow((p) => !p)}>
+      <button id="bellBtn" onClick={() => setOpen((p) => !p)}>
         🔔
         {messages.length > 0 && (
           <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">

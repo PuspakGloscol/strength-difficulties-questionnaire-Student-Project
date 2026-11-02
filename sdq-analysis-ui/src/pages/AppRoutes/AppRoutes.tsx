@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router";
 import ClientFilePage from "@/pages/ClientFilePage";
 import BulkUploadPage from "@/pages/BulkUploadPage";
 import HomePage from "@/pages/HomePage";

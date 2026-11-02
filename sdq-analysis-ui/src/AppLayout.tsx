@@ -2,7 +2,7 @@ import React from "react";
 import InProgressSpinner from "./components/InProgressSpinner";
 
 import SdqNav from "./components/SdqNav";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 
 const AppLayout: React.FC = () => {
   return (
