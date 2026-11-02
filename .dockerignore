@@ -1,0 +1,20 @@
+# Git and editor metadata
+.git
+.gitignore
+.idea
+.vscode
+*.iml
+
+# Local build artefacts
+**/.gradle
+**/build
+**/target
+**/dist
+**/node_modules
+**/.DS_Store
+
+# Test resources are kept in repo but not needed for image build
+**/*.xlsx
+
+# Top-level environment files for local dev only
+.env

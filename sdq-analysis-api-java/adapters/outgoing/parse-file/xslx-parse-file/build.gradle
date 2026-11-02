@@ -1,9 +1,16 @@
 plugins {
     id 'java-library'
+    id 'io.spring.dependency-management' version "${springDependencyVersion}"
 }
 
 group = 'uk.ratracejoe.sdq.xslx'
 version = '0.0.1-SNAPSHOT'
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+    }
+}
 
 dependencies {
     implementation project(":domain:ports:outgoing:parse-file")
@@ -21,7 +28,7 @@ dependencies {
 
     testImplementation project(":adapters:outgoing:repository:repository-sql-adapter")
     testImplementation project(":domain:ports:outgoing:repository")
-    testImplementation("org.springframework.boot:spring-boot-starter-jdbc:3.5.14")
+    testImplementation("org.springframework.boot:spring-boot-starter-jdbc")
     testImplementation 'org.postgresql:postgresql:42.7.3'
     testImplementation project(":domain:use-cases")
     testImplementation platform('org.junit:junit-bom:5.9.1')
