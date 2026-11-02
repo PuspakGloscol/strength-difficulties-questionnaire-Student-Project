@@ -22,8 +22,7 @@ func main() {
 	fmt.Println("Hello Joe SDQ App", app)
 	fmt.Println("Hosting Static resources from", submission_dir)
 	fmt.Println("Connecting to Database at", db_url)
-	db.CreateDb(db_url)
-	r := rest.CreateRestApi()
+	r := rest.CreateRestApi(app.ClientRepository)
 	fileServer(r, "", http.Dir(submission_dir))
 	http.ListenAndServe(":3000", r)
 }

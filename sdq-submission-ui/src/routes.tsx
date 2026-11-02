@@ -3,6 +3,7 @@ import { Outlet, type RouteObject } from "react-router";
 import Page1 from "./components/Page1";
 import Page2 from "./components/Page2";
 import App from "./App";
+import Page3 from "./components/Page3";
 
 const ROUTES: RouteObject[] = [
   {
@@ -20,6 +21,10 @@ const ROUTES: RouteObject[] = [
       {
         path: "/page2",
         element: <Page2 />,
+      },
+      {
+        path: "/page3",
+        element: <Page3 />,
       },
     ],
   },

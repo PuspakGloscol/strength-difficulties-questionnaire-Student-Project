@@ -5,8 +5,8 @@ import (
 )
 
 type SdqClient struct {
-	ID       uuid.UUID
-	CodeName string
+	ID       uuid.UUID `json:"id"`
+	CodeName string    `json:"codeName"`
 }
 
 type SdqClientRepository interface {
