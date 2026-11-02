@@ -39,32 +39,32 @@ build-submission-ui: install-submission-ui
 
 # Copy the static resources of the UI into the public backend folder.
 copy-analysis-ui: build-analysis-ui
-    rm -rf {{ANALYSIS_API_MODULE_JAVA}}/src/main/resources/static
+    rm -rf {{ANALYSIS_API_MODULE_JAVA}}/spring-app/src/main/resources/static
     cp -R {{ANALYSIS_UI_MODULE}}/dist {{ANALYSIS_API_MODULE_JAVA}}/spring-app/src/main/resources/static
 
-run-service-dev-rust: 
+run-analysis-api-rust: 
     ANALYSIS_UI_RESOURCES_DIR="{{ANALYSIS_UI_MODULE}}/dist" \
     cargo run --manifest-path sdq-analysis-api-rust/app/Cargo.toml
 
-run-dev-rust: build-analysis-ui run-service-dev-rust
+run-dev-rust: build-analysis-ui run-analysis-api-rust
 
-run-service-dev-go:
+run-submission-api:
     cd {{SUBMISSION_API_MODULE_GO}} && \
         DATABASE_URL="postgres://{{SDQ_DATABASE_USERNAME}}:{{SDQ_DATABASE_PASSWORD}}@localhost:5432/{{SDQ_DATABASE_NAME}}?sslmode=disable" \
         SUBMISSION_UI_RESOURCES_DIR="../{{SUBMISSION_UI_MODULE}}/dist" \
          go run ./app
 
-run-dev-go: build-submission-ui run-service-dev-go
+run-submission-api-build-ui: build-submission-ui run-submission-api
 
 build-analysis-api-rust:
     cargo build --manifest-path {{ANALYSIS_API_MODULE_RUST}}/app/Cargo.toml
 
-# Run the service via gradle
-run-service-dev-java:
+# Run the analysis api via gradle
+run-analysis-api-java:
     cd {{ANALYSIS_API_MODULE_JAVA}} && ./gradlew :spring-app:bootRun
 
-# Build the UI and Run the service via gradle
-run-dev-java: copy-analysis-ui run-service-dev-java
+# Build the UI and Run the analysis API via gradle
+run-analysis-api-java-with-ui: copy-analysis-ui run-analysis-api-java
 
 # Build the JAR file
 build-api-java:
@@ -79,15 +79,19 @@ build-rust:
 build-go:
     cd {{SUBMISSION_API_MODULE_GO}} && go build -o dist/sdq-submission-api-go ./app
 
-# Runs the user interface in hot reloading mode.
-run-analysis-ui-dev: install-analysis-ui
+# Runs the analysis UI in hot reloading mode.
+run-analysis-ui: install-analysis-ui
     npm run dev --prefix {{ANALYSIS_UI_MODULE}}
 
+# Runs the submission UI in hot reloading mode
+run-submission-ui: install-submission-ui
+    npm run dev --prefix {{SUBMISSION_UI_MODULE}}
+
 # Run the backend unit tests
-test-service-java:
+test-analysis-api-java:
     cd {{ANALYSIS_API_MODULE_JAVA}} && ./gradlew test --info
 
-test-service-rust:
+test-analysis-api-rust:
     cargo test --manifest-path sdq-analysis-api-rust/app/Cargo.toml
 
 # Run the dependencies required by unit tests
@@ -97,7 +101,7 @@ docker-run-test-deps:
     docker compose -f local/docker-compose.test.yaml up --build --wait
 
 # Run the unit tests, which depends on us running containers
-run-tests: docker-run-test-deps test-service-java
+run-tests: docker-run-test-deps test-analysis-api-java
 
 # Run the app images as they are
 docker-run-app-no-build:
@@ -111,7 +115,7 @@ docker-run-go:
     docker compose -f local/docker-compose.yaml --profile api-go up --build --wait
 
 # Run the app dependencies in docker, but not the app itself
-# Use run-service-dev-java for that
+# Use run-api-dev-java for that
 docker-run-deps:
     docker compose -f local/docker-compose.yaml up --build -d --wait
 
