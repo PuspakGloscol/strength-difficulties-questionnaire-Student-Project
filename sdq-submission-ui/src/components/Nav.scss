@@ -1,0 +1,33 @@
+$accent: #4e03c6;
+
+.nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: $accent;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.4rem 0.9rem;
+    border-radius: 0.35rem;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    &:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 2px;
+    }
+
+    &.active {
+      background: white;
+      color: $accent;
+    }
+  }
+}

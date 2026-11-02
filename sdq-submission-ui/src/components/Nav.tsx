@@ -1,12 +1,15 @@
-import { Link } from "react-router";
+import { NavLink } from "react-router";
+import "./Nav.scss";
 
 function Nav() {
   return (
-    <nav>
-      <Link to="/">Home</Link>
-      <Link to="/page1">Page 1</Link>
-      <Link to="/page2">Page 2</Link>
-      <Link to="/page3">Page 3</Link>
+    <nav className="nav">
+      <NavLink to="/" end>
+        Home
+      </NavLink>
+      <NavLink to="/page1">Page 1</NavLink>
+      <NavLink to="/page2">Page 2</NavLink>
+      <NavLink to="/page3">Page 3</NavLink>
     </nav>
   );
 }
