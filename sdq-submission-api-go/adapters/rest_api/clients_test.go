@@ -9,6 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	domain "joesharpcs.co.uk/sdq/domain"
+
+	"time"
 )
 
 type fakeRepo struct {
@@ -29,11 +31,22 @@ func get(repo domain.SdqClientRepository) *httptest.ResponseRecorder {
 
 func TestGetClients(t *testing.T) {
 	id := uuid.New()
-	rec := get(fakeRepo{clients: []domain.SdqClient{{ID: id, CodeName: "abc"}}})
+	rec := get(fakeRepo{clients: []domain.SdqClient{{
+		ID: id, 
+		CodeName: "abc", 
+		DoB: "abc", 
+		Gender: "abc", 
+		Council: "abc",
+		Ethnicity: "abc",
+		EAL: "abc",
+		DisStat: "abc",
+		CareExp: "abc",
+		FundSrc: "abc"
+		}}}) //not entirely sure what this does? Gets the client data??
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d", rec.Code)
 	}
-	want := `[{"id":"` + id.String() + `","codeName":"abc"}]`
+	want := `[{"id":"` + id.String() + `","codeName":"abc", "dateofbirth":"abc", "gender":"abc", "council":"abc", "ethnicity": "abc", "eal": "abc", "disability": "abc", "careexp": "abc", "fundsrc": "abc"}]` //show what data the test wants to not fail
 	if strings.TrimSpace(rec.Body.String()) != want {
 		t.Fatalf("got %s", rec.Body.String())
 	}
