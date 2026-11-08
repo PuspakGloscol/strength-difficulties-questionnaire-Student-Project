@@ -31,3 +31,25 @@ $accent: #4e03c6;
     }
   }
 }
+
+.cltable{
+  border: 2px solid black;
+  width:100%;
+  overflow: auto;
+  white-space: nowrap;
+
+  thead{
+    background-color:#4e03c6;
+    color: white;
+  }
+
+  tr, th{
+    border: 1px solid black;
+    text-align: center;
+    padding: 5px;
+    width: auto;
+  }
+  tr:nth-child(even){
+    background-color: aquamarine;
+  }
+}

@@ -2,7 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 
 type SdqClient = {
   id: string;
-  name: string;
+  codeName: string;
+  dateofbirth: string;
+  gender: string;
+  council: string;
+  ethnicity: string;
+  eal: string;
+  disability: string;
+  careexp: string;
+  fundsrc: string;
 };
 type ClientApi = {
   clients: SdqClient[];
